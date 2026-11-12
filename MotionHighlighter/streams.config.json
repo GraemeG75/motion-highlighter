@@ -1,0 +1,102 @@
+{
+  "description": "Motion Highlighter Camera & Stream Configuration. Add your camera URLs, RTSP links, and credentials here.",
+  "cameras": [
+    {
+      "name": "Sample IP Camera (RTSP with Basic Auth)",
+      "category": "My Cameras",
+      "url": "rtsp://192.168.1.100:554/stream1",
+      "format": "Rtsp",
+      "authType": "BasicAuth",
+      "username": "admin",
+      "password": "password123",
+      "notes": "Example showing how to configure credentials for an RTSP camera stream."
+    },
+    {
+      "name": "Sample IP Camera (MJPEG with Custom Headers)",
+      "category": "My Cameras",
+      "url": "http://192.168.1.100:8080/video.mjpg",
+      "format": "Mjpeg",
+      "authType": "CustomHeaders",
+      "customHeaders": {
+        "Authorization": "Bearer sample_token_here",
+        "Cookie": "session_id=your_cookie_here"
+      },
+      "notes": "Example showing custom headers or cookies for protected HTTP camera streams."
+    },
+    {
+      "name": "Google Home Live Camera",
+      "category": "Camera Portals",
+      "url": "https://home.google.com",
+      "format": "WebLiveFeed",
+      "authType": "None",
+      "notes": "Use 'Sign In & Capture...' to log in with your Google account. You can also replace this URL with your direct camera page URL."
+    },
+    {
+      "name": "Google Nest Web Portal",
+      "category": "Camera Portals",
+      "url": "https://home.nest.com",
+      "format": "WebLiveFeed",
+      "authType": "None",
+      "notes": "Nest camera live web view."
+    },
+    {
+      "name": "Ring Protect Live View",
+      "category": "Camera Portals",
+      "url": "https://ring.com/users/sign_in",
+      "format": "WebLiveFeed",
+      "authType": "None",
+      "notes": "Ring dashboard login."
+    },
+    {
+      "name": "Wyze Web View Live",
+      "category": "Camera Portals",
+      "url": "https://view.wyze.com/live",
+      "format": "WebLiveFeed",
+      "authType": "None",
+      "notes": "Wyze live camera feed."
+    },
+    {
+      "name": "Arlo Web Portal",
+      "category": "Camera Portals",
+      "url": "https://my.arlo.com",
+      "format": "WebLiveFeed",
+      "authType": "None",
+      "notes": "Arlo camera portal."
+    },
+    {
+      "name": "Eufy Security Portal",
+      "category": "Camera Portals",
+      "url": "https://mysecurity.eufylife.com",
+      "format": "WebLiveFeed",
+      "authType": "None"
+    },
+    {
+      "name": "UniFi Protect",
+      "category": "Camera Portals",
+      "url": "https://unifi.ui.com",
+      "format": "WebLiveFeed",
+      "authType": "None"
+    },
+    {
+      "name": "Big Buck Bunny (DASH Stream - Verified 200 OK)",
+      "category": "Public Test Streams",
+      "url": "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd",
+      "format": "DashMpd",
+      "authType": "None"
+    },
+    {
+      "name": "Big Buck Bunny (HLS Stream - Verified 200 OK)",
+      "category": "Public Test Streams",
+      "url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+      "format": "HlsM3u8",
+      "authType": "None"
+    },
+    {
+      "name": "Tears of Steel (HLS Stream - Verified 200 OK)",
+      "category": "Public Test Streams",
+      "url": "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8",
+      "format": "HlsM3u8",
+      "authType": "None"
+    }
+  ]
+}
