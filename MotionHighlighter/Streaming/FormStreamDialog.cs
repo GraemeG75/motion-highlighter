@@ -1,4 +1,5 @@
 using System.Net;
+using MotionHighlighter.Localization;
 
 namespace MotionHighlighter.Streaming
 {
@@ -15,6 +16,7 @@ namespace MotionHighlighter.Streaming
         public FormStreamDialog(string? initialUrl = null)
         {
             InitializeComponent();
+            ApplyLocalization();
 
             _cmbAuthType.SelectedIndex = 0;
             _cmbAuthType.SelectedIndexChanged += (_, _) => UpdateAuthFieldsVisibility();
@@ -43,6 +45,20 @@ namespace MotionHighlighter.Streaming
             _btnConnect.Click += (_, _) => OnConnectClicked();
 
             _txtUrl.TextChanged += OnUrlTextChanged;
+        }
+
+        private void ApplyLocalization()
+        {
+            Text = LocalizationManager.T("stream.title");
+            _btnTestConnection.Text = LocalizationManager.T("stream.btn_test");
+            _btnConnect.Text = LocalizationManager.T("stream.btn_connect");
+            _btnCancel.Text = LocalizationManager.T("stream.btn_cancel");
+            _btnWebCapture.Text = LocalizationManager.T("stream.btn_web_capture");
+            _btnPasteCurl.Text = LocalizationManager.T("stream.btn_curl");
+            _lblBearer.Text = LocalizationManager.T("stream.lbl_token");
+            _lblUsername.Text = LocalizationManager.T("stream.lbl_username");
+            _lblPassword.Text = LocalizationManager.T("stream.lbl_password");
+            _lblHeaders.Text = LocalizationManager.T("stream.lbl_headers");
         }
 
         private void PopulatePresetsAndHistory()
@@ -228,18 +244,18 @@ namespace MotionHighlighter.Streaming
                 string text = Clipboard.GetText();
                 if (string.IsNullOrWhiteSpace(text))
                 {
-                    MessageBox.Show(this, "Clipboard is empty. Copy a request as cURL from Chrome / Edge DevTools (F12 > Network > Copy as cURL) first.", "Clipboard Empty", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(this, LocalizationManager.T("stream.msg_clipboard_empty"), LocalizationManager.T("common.info"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
                 if (!ParseAndApplyCurl(text))
                 {
-                    MessageBox.Show(this, "Could not parse a valid cURL command from clipboard.\nMake sure you copied with 'Copy as cURL'.", "cURL Parse Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(this, LocalizationManager.T("stream.msg_curl_parse_error"), LocalizationManager.T("common.warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, $"Error reading clipboard:\n{ex.Message}", "Clipboard Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, LocalizationManager.T("stream.msg_curl_read_error", ex.Message), LocalizationManager.T("common.error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -342,7 +358,7 @@ namespace MotionHighlighter.Streaming
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, $"Error starting Web Stream Capture:\n{ex.Message}\nMake sure Microsoft Edge WebView2 runtime is installed.", "Web Capture Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, LocalizationManager.T("stream.msg_web_capture_error", ex.Message), LocalizationManager.T("common.error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -458,7 +474,7 @@ namespace MotionHighlighter.Streaming
                 {
                     _lblStatus.Text = "No video streams detected on this webpage.";
                     _lblStatus.ForeColor = Color.DarkOrange;
-                    MessageBox.Show(this, "No video stream URLs (DASH, HLS, m4s, m4v, mp4) were found on this webpage.\nCheck if authentication is needed or enter a direct stream URL.", "No Streams Found", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(this, LocalizationManager.T("stream.msg_no_streams_found"), LocalizationManager.T("common.info"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
@@ -476,7 +492,7 @@ namespace MotionHighlighter.Streaming
             {
                 _lblStatus.Text = "Failed to extract streams from webpage.";
                 _lblStatus.ForeColor = Color.Red;
-                MessageBox.Show(this, $"Error extracting streams from webpage:\n{ex.Message}", "Extraction Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, LocalizationManager.T("stream.msg_extract_error", ex.Message), LocalizationManager.T("common.error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -561,7 +577,7 @@ namespace MotionHighlighter.Streaming
             string url = _txtUrl.Text.Trim();
             if (string.IsNullOrWhiteSpace(url))
             {
-                MessageBox.Show(this, "Please enter or select a stream URL.", "Stream URL Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, LocalizationManager.T("stream.msg_url_required"), LocalizationManager.T("common.warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 

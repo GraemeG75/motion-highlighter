@@ -1,6 +1,8 @@
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using MotionHighlighter.Localization;
 using MotionHighlighter.Streaming;
+using MotionHighlighter.Updating;
 
 namespace MotionHighlighter
 {
@@ -40,6 +42,11 @@ namespace MotionHighlighter
         public FormMain()
         {
             InitializeComponent();
+
+            PopulateLanguages();
+            _cmbLanguage.SelectedIndexChanged += OnLanguageSelectionChanged;
+            LocalizationManager.Instance.LanguageChanged += (_, _) => ApplyLocalization();
+            ApplyLocalization();
 
             _btnLoad.Click += (_, _) => LoadVideo();
             _btnOpenStream.Click += (_, _) => OpenStreamDialog();
@@ -151,6 +158,138 @@ namespace MotionHighlighter
             _nudBoxHold.Enabled = enabled;
         }
 
+        private void PopulateLanguages()
+        {
+            _cmbLanguage.Items.Clear();
+            foreach (LocaleInfo loc in LocalizationManager.Instance.AvailableLocales)
+            {
+                _cmbLanguage.Items.Add(loc);
+            }
+
+            LocaleInfo current = LocalizationManager.Instance.CurrentLocale;
+            for (int i = 0; i < _cmbLanguage.Items.Count; i++)
+            {
+                if (_cmbLanguage.Items[i] is LocaleInfo info && info.Code.Equals(current.Code, StringComparison.OrdinalIgnoreCase))
+                {
+                    _cmbLanguage.SelectedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        private void OnLanguageSelectionChanged(object? sender, EventArgs e)
+        {
+            if (_cmbLanguage.SelectedItem is LocaleInfo locale)
+            {
+                LocalizationManager.Instance.SetLanguage(locale.Code);
+            }
+        }
+
+        /// <summary>
+        /// Translates all user-visible text throughout the main application form and controls.
+        /// </summary>
+        public void ApplyLocalization()
+        {
+            Text = LocalizationManager.T("main.title");
+            _btnLoad.Text = LocalizationManager.T("main.btn_open_video");
+            _btnOpenStream.Text = LocalizationManager.T("main.btn_open_stream");
+            _btnAbout.Text = LocalizationManager.T("main.btn_about");
+            _btnExport.Text = LocalizationManager.T("main.btn_export");
+            _btnCancelExport.Text = LocalizationManager.T("main.btn_cancel_export");
+            _btnGrabScreenshot.Text = LocalizationManager.T("main.btn_screenshot");
+            _btnZoomOut.Text = LocalizationManager.T("main.btn_zoom_out");
+            _btnZoomIn.Text = LocalizationManager.T("main.btn_zoom_in");
+            _btnZoomReset.Text = LocalizationManager.T("main.btn_zoom_reset");
+            _btnPlay.Text = _isPlaying ? LocalizationManager.T("main.btn_pause") : LocalizationManager.T("main.btn_play");
+            _chkOverlay.Text = LocalizationManager.T("main.chk_overlay");
+            _chkTrailsInOverlay.Text = LocalizationManager.T("main.chk_trails");
+            _chkBoxes.Text = LocalizationManager.T("main.chk_boxes");
+
+            if (string.IsNullOrWhiteSpace(_videoFilePath) && _streamGrabber == null)
+            {
+                _lblVideoTitle.Text = LocalizationManager.T("main.no_video");
+            }
+
+            UpdateSidebarLocalization();
+
+            // Tooltips
+            _toolTip.SetToolTip(_btnLoad, LocalizationManager.T("main.tooltip_open_video"));
+            _toolTip.SetToolTip(_btnOpenStream, LocalizationManager.T("main.tooltip_open_stream"));
+            _toolTip.SetToolTip(_btnAbout, LocalizationManager.T("main.tooltip_about"));
+            _toolTip.SetToolTip(_btnGrabScreenshot, LocalizationManager.T("main.tooltip_screenshot"));
+            _toolTip.SetToolTip(_btnZoomIn, LocalizationManager.T("main.tooltip_zoom_in"));
+            _toolTip.SetToolTip(_btnZoomOut, LocalizationManager.T("main.tooltip_zoom_out"));
+            _toolTip.SetToolTip(_btnZoomReset, LocalizationManager.T("main.tooltip_zoom_reset"));
+            _toolTip.SetToolTip(_lblZoomLevel, LocalizationManager.T("main.tooltip_zoom_level"));
+            _toolTip.SetToolTip(_btnPlay, LocalizationManager.T("main.tooltip_play"));
+            _toolTip.SetToolTip(_btnStepBackFrame, LocalizationManager.T("main.tooltip_step_back"));
+            _toolTip.SetToolTip(_btnStepForwardFrame, LocalizationManager.T("main.tooltip_step_forward"));
+            _toolTip.SetToolTip(_chkOverlay, LocalizationManager.T("main.tooltip_chk_overlay"));
+            _toolTip.SetToolTip(_chkTrailsInOverlay, LocalizationManager.T("main.tooltip_chk_trails"));
+            _toolTip.SetToolTip(_chkBoxes, LocalizationManager.T("main.tooltip_chk_boxes"));
+            _toolTip.SetToolTip(_btnExport, LocalizationManager.T("main.tooltip_export"));
+            _toolTip.SetToolTip(_btnCancelExport, LocalizationManager.T("main.tooltip_cancel_export"));
+        }
+
+        private void UpdateSidebarLocalization()
+        {
+            UpdateControlsRecursive(this);
+        }
+
+        private static void UpdateControlsRecursive(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                if (c is GroupBox gb)
+                {
+                    if (gb.Name == "grpDetection")
+                    {
+                        gb.Text = LocalizationManager.T("main.grp_detection");
+                    }
+                    else if (gb.Name == "grpDisplay")
+                    {
+                        gb.Text = LocalizationManager.T("main.grp_overlay");
+                    }
+                    else if (gb.Name == "grpInfo")
+                    {
+                        gb.Text = LocalizationManager.T("main.grp_metrics");
+                    }
+                }
+                else if (c is Label lbl)
+                {
+                    if (lbl.Name == "lblThreshold")
+                    {
+                        lbl.Text = LocalizationManager.T("main.lbl_threshold");
+                    }
+                    else if (lbl.Name == "lblMinArea")
+                    {
+                        lbl.Text = LocalizationManager.T("main.lbl_min_area");
+                    }
+                    else if (lbl.Name == "lblBlur")
+                    {
+                        lbl.Text = LocalizationManager.T("main.lbl_blur");
+                    }
+                    else if (lbl.Name == "lblLearn")
+                    {
+                        lbl.Text = LocalizationManager.T("main.lbl_learn_rate");
+                    }
+                    else if (lbl.Name == "lblOverlay")
+                    {
+                        lbl.Text = LocalizationManager.T("main.lbl_alpha");
+                    }
+                    else if (lbl.Name == "lblBoxHold")
+                    {
+                        lbl.Text = LocalizationManager.T("main.lbl_box_hold");
+                    }
+                }
+
+                if (c.HasChildren)
+                {
+                    UpdateControlsRecursive(c);
+                }
+            }
+        }
+
         private void ShowAboutDialog()
         {
             using FormAbout dlg = new();
@@ -193,7 +332,7 @@ namespace MotionHighlighter
                 _seek.Value = 0;
                 _seek.Enabled = false;
 
-                _btnPlay.Text = "⏸ Pause";
+                _btnPlay.Text = LocalizationManager.T("main.btn_pause");
                 _isPlaying = true;
                 UpdateUiEnabled(true);
 
@@ -295,7 +434,7 @@ namespace MotionHighlighter
                         if (_isStreaming && _streamGrabber != null && !_streamGrabber.IsRunning)
                         {
                             _isPlaying = false;
-                            _btnPlay.Text = "▶ Play";
+                            _btnPlay.Text = LocalizationManager.T("main.btn_play");
                             _lblVideoTitle.Text = $"[STREAM ENDED] {_streamTitle}";
                             _lblVideoTitle.ForeColor = Color.DarkOrange;
                         }
@@ -309,7 +448,7 @@ namespace MotionHighlighter
             Mat? frameToCapture = _latestAnnotatedBgr ?? _currentFrameBgr;
             if (frameToCapture == null || frameToCapture.IsDisposed || frameToCapture.Empty())
             {
-                MessageBox.Show(this, "No active frame available to capture screenshot.", "Screenshot", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, LocalizationManager.T("main.msg_no_frame_screenshot"), LocalizationManager.T("main.btn_screenshot"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -341,7 +480,7 @@ namespace MotionHighlighter
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, $"Failed to save screenshot:\n{ex.Message}", "Screenshot Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, LocalizationManager.T("main.msg_screenshot_error", ex.Message), LocalizationManager.T("common.error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -351,8 +490,8 @@ namespace MotionHighlighter
 
             using OpenFileDialog ofd = new()
             {
-                Filter = "Video Files (*.mp4;*.mov;*.mkv;*.avi)|*.mp4;*.mov;*.mkv;*.avi|All Files (*.*)|*.*",
-                Title = "Choose a video file"
+                Filter = LocalizationManager.T("main.dlg_open_video_filter"),
+                Title = LocalizationManager.T("main.dlg_open_video_title")
             };
 
             if (ofd.ShowDialog(this) != DialogResult.OK)
@@ -390,14 +529,14 @@ namespace MotionHighlighter
 
                 _currentFrameIndex = 0;
                 _isPlaying = false;
-                _btnPlay.Text = "▶ Play";
+                _btnPlay.Text = LocalizationManager.T("main.btn_play");
 
                 SeekTo(0, resetBackground: true);
                 UpdateUiEnabled(true);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, $"Error loading video:\n{ex.Message}", "Error Loading Video", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, LocalizationManager.T("main.msg_load_error", ex.Message), LocalizationManager.T("common.error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -481,7 +620,7 @@ namespace MotionHighlighter
                 if (_isPlaying)
                 {
                     _isPlaying = false;
-                    _btnPlay.Text = "▶ Resume";
+                    _btnPlay.Text = LocalizationManager.T("main.btn_play");
                 }
                 else
                 {
@@ -495,7 +634,7 @@ namespace MotionHighlighter
                     }
 
                     _isPlaying = true;
-                    _btnPlay.Text = "⏸ Pause";
+                    _btnPlay.Text = LocalizationManager.T("main.btn_pause");
                 }
                 return;
             }
@@ -523,7 +662,7 @@ namespace MotionHighlighter
             }
 
             _isPlaying = true;
-            _btnPlay.Text = "⏸ Pause";
+            _btnPlay.Text = LocalizationManager.T("main.btn_pause");
 
             _playCts?.Cancel();
             try { _playTask?.Wait(200); } catch { }
@@ -618,7 +757,7 @@ namespace MotionHighlighter
             }
 
             _isPlaying = false;
-            _btnPlay.Text = "▶ Play";
+            _btnPlay.Text = LocalizationManager.T("main.btn_play");
             if (!_isStreaming)
             {
                 _playCts?.Cancel();
@@ -638,7 +777,7 @@ namespace MotionHighlighter
             if (_isStreaming)
             {
                 _isPlaying = false;
-                _btnPlay.Text = "▶ Play";
+                _btnPlay.Text = LocalizationManager.T("main.btn_play");
                 _playCts?.Cancel();
                 _streamGrabber?.Stop();
                 _lblVideoTitle.Text = $"[STREAM STOPPED] {_streamTitle}";
@@ -1104,7 +1243,7 @@ namespace MotionHighlighter
                 _lblInfoFrames.Text = $"{frames} frames";
                 _lblInfoTime.Text = $"{FormatTime(streamSeconds)} (LIVE)";
 
-                _lblInfoRegions.Text = $"{motionCount} {(motionCount == 1 ? "region" : "regions")}";
+                _lblInfoRegions.Text = LocalizationManager.T("main.metric_motion_count", motionCount);
                 _lblInfoRegions.ForeColor = motionCount > 0 ? Color.DarkRed : Color.DarkGreen;
                 return;
             }
@@ -1123,7 +1262,7 @@ namespace MotionHighlighter
             _lblInfoFrames.Text = $"{_currentFrameIndex + 1} / {_totalFrames}";
             _lblInfoTime.Text = $"{FormatTime(currentSeconds)} / {FormatTime(totalSeconds)}";
 
-            _lblInfoRegions.Text = $"{motionCount} {(motionCount == 1 ? "region" : "regions")}";
+            _lblInfoRegions.Text = LocalizationManager.T("main.metric_motion_count", motionCount);
             _lblInfoRegions.ForeColor = motionCount > 0 ? Color.DarkRed : Color.DarkGreen;
         }
 
@@ -1152,8 +1291,8 @@ namespace MotionHighlighter
 
             using SaveFileDialog sfd = new()
             {
-                Filter = "MP4 Video (*.mp4)|*.mp4|All Files (*.*)|*.*",
-                Title = "Save Annotated Video",
+                Filter = LocalizationManager.T("main.dlg_save_export_filter"),
+                Title = LocalizationManager.T("main.dlg_save_export_title"),
                 FileName = Path.GetFileNameWithoutExtension(_videoFilePath) + "_annotated.mp4"
             };
 
@@ -1382,7 +1521,7 @@ namespace MotionHighlighter
             }
             catch (OperationCanceledException)
             {
-                errorMessage = "Export was cancelled.";
+                errorMessage = LocalizationManager.T("main.msg_export_cancelled");
             }
             catch (Exception ex)
             {
@@ -1404,7 +1543,7 @@ namespace MotionHighlighter
 
                 if (success)
                 {
-                    MessageBox.Show(this, "Video export completed successfully!", "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(this, LocalizationManager.T("main.msg_export_complete"), LocalizationManager.T("main.grp_export"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else if (errorMessage != null)
                 {

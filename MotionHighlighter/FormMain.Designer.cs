@@ -35,6 +35,7 @@ namespace MotionHighlighter
             _btnLoad = new Button();
             _btnOpenStream = new Button();
             _btnAbout = new Button();
+            _cmbLanguage = new ComboBox();
             _btnGrabScreenshot = new Button();
             _btnZoomOut = new Button();
             _lblZoomLevel = new Label();
@@ -131,6 +132,7 @@ namespace MotionHighlighter
             panelTop.Controls.Add(_btnCancelExport);
             panelTop.Controls.Add(_progressBar);
             panelTop.Controls.Add(_lblVideoTitle);
+            panelTop.Controls.Add(_cmbLanguage);
             panelTop.Controls.Add(_btnAbout);
             panelTop.Dock = DockStyle.Top;
             panelTop.Location = new Point(0, 0);
@@ -208,9 +210,21 @@ namespace MotionHighlighter
             _lblVideoTitle.ForeColor = SystemColors.ControlDarkDark;
             _lblVideoTitle.Location = new Point(760, 14);
             _lblVideoTitle.Name = "_lblVideoTitle";
-            _lblVideoTitle.Size = new Size(415, 20);
+            _lblVideoTitle.Size = new Size(278, 20);
             _lblVideoTitle.TabIndex = 6;
             _lblVideoTitle.Text = "No video loaded. Click 'Open Video...' or 'Open Stream...' to begin.";
+
+            // 
+            // _cmbLanguage
+            // 
+            _cmbLanguage.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            _cmbLanguage.DropDownStyle = ComboBoxStyle.DropDownList;
+            _cmbLanguage.Font = new Font("Segoe UI", 9F);
+            _cmbLanguage.FormattingEnabled = true;
+            _cmbLanguage.Location = new Point(1048, 12);
+            _cmbLanguage.Name = "_cmbLanguage";
+            _cmbLanguage.Size = new Size(128, 23);
+            _cmbLanguage.TabIndex = 7;
 
             // 
             // _btnAbout
@@ -219,7 +233,7 @@ namespace MotionHighlighter
             _btnAbout.Location = new Point(1184, 9);
             _btnAbout.Name = "_btnAbout";
             _btnAbout.Size = new Size(70, 30);
-            _btnAbout.TabIndex = 7;
+            _btnAbout.TabIndex = 8;
             _btnAbout.Text = "ℹ About";
             _btnAbout.UseVisualStyleBackColor = true;
 
@@ -1040,6 +1054,7 @@ namespace MotionHighlighter
         private ZoomablePictureBox _picture;
         private Button _btnLoad;
         private Button _btnOpenStream;
+        private ComboBox _cmbLanguage;
         private Button _btnAbout;
         private Button _btnGrabScreenshot;
         private Button _btnZoomOut;

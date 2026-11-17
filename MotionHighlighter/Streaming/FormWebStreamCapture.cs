@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using MotionHighlighter.Localization;
 
 namespace MotionHighlighter.Streaming
 {
@@ -38,7 +39,7 @@ namespace MotionHighlighter.Streaming
 
         private void InitializeUi()
         {
-            Text = "Sign In & Auto-Capture Camera Stream";
+            Text = LocalizationManager.T("webcapture.title");
             ClientSize = new Size(1150, 780);
             StartPosition = FormStartPosition.CenterParent;
             MinimumSize = new Size(850, 600);
@@ -60,12 +61,12 @@ namespace MotionHighlighter.Streaming
                 BackColor = Color.Transparent
             };
 
-            _btnCancel.Text = "Cancel";
+            _btnCancel.Text = LocalizationManager.T("webcapture.btn_close");
             _btnCancel.Size = new Size(85, 34);
             _btnCancel.Margin = new Padding(6, 0, 0, 0);
             _btnCancel.Click += (_, _) => { DialogResult = DialogResult.Cancel; Close(); };
 
-            _btnUseStream.Text = "✓ Use Captured Stream";
+            _btnUseStream.Text = LocalizationManager.T("webcapture.btn_capture");
             _btnUseStream.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             _btnUseStream.Size = new Size(220, 34);
             _btnUseStream.Margin = new Padding(0);
@@ -79,7 +80,7 @@ namespace MotionHighlighter.Streaming
             panelTopButtons.Controls.Add(_btnCancel);
             panelTopButtons.Controls.Add(_btnUseStream);
 
-            _lblStatus.Text = "Log in to your camera portal. When the live camera feed is visible, click 'Use Captured Stream' on the right.";
+            _lblStatus.Text = LocalizationManager.T("webcapture.status_ready");
             _lblStatus.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular);
             _lblStatus.ForeColor = Color.FromArgb(30, 41, 59);
             _lblStatus.Dock = DockStyle.Fill;
@@ -134,7 +135,7 @@ namespace MotionHighlighter.Streaming
                 BackColor = Color.Transparent
             };
 
-            _btnGo.Text = "Go";
+            _btnGo.Text = LocalizationManager.T("webcapture.btn_go");
             _btnGo.Size = new Size(48, 26);
             _btnGo.Margin = new Padding(4, 0, 8, 0);
             _btnGo.Click += (_, _) => NavigateToNavUrl();
@@ -252,7 +253,7 @@ namespace MotionHighlighter.Streaming
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, $"Failed to navigate to {url}: {ex.Message}", "Navigation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, LocalizationManager.T("webcapture.msg_nav_error", url, ex.Message), LocalizationManager.T("common.error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -598,7 +599,7 @@ namespace MotionHighlighter.Streaming
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, $"Error finalizing stream capture: {ex.Message}", "Capture Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, LocalizationManager.T("webcapture.msg_capture_error", ex.Message), LocalizationManager.T("common.error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 _btnUseStream.Enabled = true;
             }
         }
