@@ -21,6 +21,10 @@
     <None Update="streams.config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="branding\kitten.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <EmbeddedResource Include="branding\kitten.png" />
   </ItemGroup>
 
 </Project>

@@ -34,6 +34,7 @@ namespace MotionHighlighter
             _picture = new ZoomablePictureBox();
             _btnLoad = new Button();
             _btnOpenStream = new Button();
+            _btnAbout = new Button();
             _btnGrabScreenshot = new Button();
             _btnZoomOut = new Button();
             _lblZoomLevel = new Label();
@@ -130,6 +131,7 @@ namespace MotionHighlighter
             panelTop.Controls.Add(_btnCancelExport);
             panelTop.Controls.Add(_progressBar);
             panelTop.Controls.Add(_lblVideoTitle);
+            panelTop.Controls.Add(_btnAbout);
             panelTop.Dock = DockStyle.Top;
             panelTop.Location = new Point(0, 0);
             panelTop.Name = "panelTop";
@@ -206,9 +208,20 @@ namespace MotionHighlighter
             _lblVideoTitle.ForeColor = SystemColors.ControlDarkDark;
             _lblVideoTitle.Location = new Point(760, 14);
             _lblVideoTitle.Name = "_lblVideoTitle";
-            _lblVideoTitle.Size = new Size(490, 20);
+            _lblVideoTitle.Size = new Size(415, 20);
             _lblVideoTitle.TabIndex = 6;
             _lblVideoTitle.Text = "No video loaded. Click 'Open Video...' or 'Open Stream...' to begin.";
+
+            // 
+            // _btnAbout
+            // 
+            _btnAbout.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            _btnAbout.Location = new Point(1184, 9);
+            _btnAbout.Name = "_btnAbout";
+            _btnAbout.Size = new Size(70, 30);
+            _btnAbout.TabIndex = 7;
+            _btnAbout.Text = "ℹ About";
+            _btnAbout.UseVisualStyleBackColor = true;
 
             // 
             // panelBottom
@@ -984,6 +997,7 @@ namespace MotionHighlighter
             _toolTip.SetToolTip(_lblZoomLevel, "Current Zoom Level (100% - 1000%): Click and drag on video to pan.");
             _toolTip.SetToolTip(_btnZoomIn, "Zoom In (Ctrl + Plus / Wheel Up): Zoom in to inspect motion highlights and bounding boxes in fine detail.");
             _toolTip.SetToolTip(_btnZoomReset, "Fit to Window (Shortcut: Escape / Ctrl + 0 / Double-Click): Resets zoom to fit entire video.");
+            _toolTip.SetToolTip(_btnAbout, "About Motion Highlighter: Application details, Generated Pixel links, and LGBTQ+ Pride community info.");
 
             // Playback controls
             _toolTip.SetToolTip(_btnPlay, "Play / Pause (Shortcut: Spacebar): Toggle video playback or live stream monitoring.");
@@ -1026,6 +1040,7 @@ namespace MotionHighlighter
         private ZoomablePictureBox _picture;
         private Button _btnLoad;
         private Button _btnOpenStream;
+        private Button _btnAbout;
         private Button _btnGrabScreenshot;
         private Button _btnZoomOut;
         private Label _lblZoomLevel;

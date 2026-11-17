@@ -81,7 +81,7 @@ namespace MotionHighlighter.Streaming
                 _auth?.ApplyToRequest(request, targetUri);
 
                 using HttpResponseMessage response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
-                
+
                 context.Response.StatusCode = (int)response.StatusCode;
                 if (response.Content.Headers.ContentType != null)
                 {

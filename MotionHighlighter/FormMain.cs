@@ -43,6 +43,7 @@ namespace MotionHighlighter
 
             _btnLoad.Click += (_, _) => LoadVideo();
             _btnOpenStream.Click += (_, _) => OpenStreamDialog();
+            _btnAbout.Click += (_, _) => ShowAboutDialog();
             _btnGrabScreenshot.Click += (_, _) => GrabScreenshot();
             _btnZoomOut.Click += (_, _) => _picture.ZoomOut();
             _btnZoomIn.Click += (_, _) => _picture.ZoomIn();
@@ -148,6 +149,12 @@ namespace MotionHighlighter
             _chkIgnoreTrails.Enabled = enabled;
             _chkResetBgOnSeek.Enabled = enabled;
             _nudBoxHold.Enabled = enabled;
+        }
+
+        private void ShowAboutDialog()
+        {
+            using FormAbout dlg = new();
+            dlg.ShowDialog(this);
         }
 
         private void OpenStreamDialog()
@@ -915,168 +922,168 @@ namespace MotionHighlighter
                     return;
                 }
 
-            // Convert frame to grayscale
-            using Mat frameGray = new();
-            Cv2.CvtColor(_currentFrameBgr, frameGray, ColorConversionCodes.BGR2GRAY);
+                // Convert frame to grayscale
+                using Mat frameGray = new();
+                Cv2.CvtColor(_currentFrameBgr, frameGray, ColorConversionCodes.BGR2GRAY);
 
-            // Initialize or update background
-            if (_bgFloatGray == null)
-            {
-                _bgFloatGray = new Mat();
-                frameGray.ConvertTo(_bgFloatGray, MatType.CV_32F);
-            }
-            else
-            {
-                double learnRate = (double)_nudLearnRate.Value / 100.0;
-                if (learnRate > 0)
+                // Initialize or update background
+                if (_bgFloatGray == null)
                 {
-                    using Mat frameFloat = new();
-                    frameGray.ConvertTo(frameFloat, MatType.CV_32F);
-                    Cv2.AccumulateWeighted(frameFloat, _bgFloatGray, learnRate, null!);
-                }
-            }
-
-            // Convert background model to byte
-            using Mat bgGray = new();
-            _bgFloatGray.ConvertTo(bgGray, MatType.CV_8U);
-
-            // Difference
-            using Mat diff = new();
-            Cv2.Absdiff(frameGray, bgGray, diff);
-
-            // Threshold
-            int thresh = (int)_nudThreshold.Value;
-            using Mat mask = new();
-            Cv2.Threshold(diff, mask, thresh, 255, ThresholdTypes.Binary);
-
-            // Blur
-            int blurKernel = (int)_nudBlur.Value;
-            if (blurKernel % 2 == 0)
-            {
-                blurKernel++;
-            }
-            if (blurKernel < 1)
-            {
-                blurKernel = 1;
-            }
-
-            using Mat blurred = new();
-            if (blurKernel > 1)
-            {
-                Cv2.GaussianBlur(mask, blurred, new OpenCvSharp.Size(blurKernel, blurKernel), 0);
-            }
-            else
-            {
-                mask.CopyTo(blurred);
-            }
-
-            // Re-threshold
-            using Mat binary = new Mat();
-            Cv2.Threshold(blurred, binary, 127, 255, ThresholdTypes.Binary);
-
-            // Active motion mask to eliminate ghost trails from bounding boxes
-            using Mat boxBinary = new Mat();
-            if (_chkIgnoreTrails.Checked && _prevFrameGray != null && !_prevFrameGray.Empty())
-            {
-                using Mat frameDiff = new Mat();
-                Cv2.Absdiff(frameGray, _prevFrameGray, frameDiff);
-
-                using Mat diffMask = new Mat();
-                Cv2.Threshold(frameDiff, diffMask, Math.Max(5, thresh / 3), 255, ThresholdTypes.Binary);
-
-                using Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new OpenCvSharp.Size(15, 15));
-                using Mat dilatedDiff = new Mat();
-                Cv2.Dilate(diffMask, dilatedDiff, kernel);
-                Cv2.MorphologyEx(dilatedDiff, dilatedDiff, MorphTypes.Close, kernel);
-
-                Cv2.BitwiseAnd(binary, dilatedDiff, boxBinary);
-            }
-            else
-            {
-                binary.CopyTo(boxBinary);
-            }
-
-            // Find contours
-            Cv2.FindContours(boxBinary, out OpenCvSharp.Point[][] contours, out HierarchyIndex[] _, RetrievalModes.External, ContourApproximationModes.ApproxSimple);
-
-            double minArea = Math.Max(50.0, (double)_nudMinArea.Value);
-            List<Rect> motionRects = new List<Rect>();
-
-            foreach (OpenCvSharp.Point[] cnt in contours)
-            {
-                double area = Cv2.ContourArea(cnt);
-                if (area >= minArea)
-                {
-                    Rect rect = Cv2.BoundingRect(cnt);
-                    motionRects.Add(rect);
-                }
-            }
-
-            if (motionRects.Count > 100)
-            {
-                motionRects = motionRects.OrderByDescending(r => r.Width * r.Height).Take(100).ToList();
-            }
-
-            // Update tracked bounding boxes for smooth persistence and fading
-            _boxTracker.Configure((int)_nudBoxHold.Value);
-            var trackedBoxes = _boxTracker.Update(motionRects);
-
-            // Draw on frame
-            if (_currentFrameBgr == null || _currentFrameBgr.IsDisposed || _currentFrameBgr.Empty())
-            {
-                return;
-            }
-
-            using Mat displayFrame = _currentFrameBgr.Clone();
-
-            // Red overlay
-            if (_chkOverlay.Checked)
-            {
-                using Mat redMask = new Mat();
-                if (_chkTrailsInOverlay.Checked)
-                {
-                    binary.CopyTo(redMask);
+                    _bgFloatGray = new Mat();
+                    frameGray.ConvertTo(_bgFloatGray, MatType.CV_32F);
                 }
                 else
                 {
-                    boxBinary.CopyTo(redMask);
+                    double learnRate = (double)_nudLearnRate.Value / 100.0;
+                    if (learnRate > 0)
+                    {
+                        using Mat frameFloat = new();
+                        frameGray.ConvertTo(frameFloat, MatType.CV_32F);
+                        Cv2.AccumulateWeighted(frameFloat, _bgFloatGray, learnRate, null!);
+                    }
                 }
 
-                double alpha = (double)_nudAlpha.Value / 100.0;
-                using Mat colorMask = new Mat(redMask.Size(), MatType.CV_8UC3, new Scalar(0, 0, 255));
-                using Mat colorMaskFinal = new Mat();
-                colorMask.CopyTo(colorMaskFinal, redMask);
+                // Convert background model to byte
+                using Mat bgGray = new();
+                _bgFloatGray.ConvertTo(bgGray, MatType.CV_8U);
 
-                Cv2.AddWeighted(displayFrame, 1.0, colorMaskFinal, alpha, 0, displayFrame);
-            }
+                // Difference
+                using Mat diff = new();
+                Cv2.Absdiff(frameGray, bgGray, diff);
 
-            // Bounding boxes with smooth persistence and fading border
-            if (_chkBoxes.Checked)
-            {
-                foreach (var (box, opacity) in trackedBoxes)
+                // Threshold
+                int thresh = (int)_nudThreshold.Value;
+                using Mat mask = new();
+                Cv2.Threshold(diff, mask, thresh, 255, ThresholdTypes.Binary);
+
+                // Blur
+                int blurKernel = (int)_nudBlur.Value;
+                if (blurKernel % 2 == 0)
                 {
-                    MotionBoxTracker.DrawFadingBoundingBox(displayFrame, box, opacity, 2);
+                    blurKernel++;
                 }
+                if (blurKernel < 1)
+                {
+                    blurKernel = 1;
+                }
+
+                using Mat blurred = new();
+                if (blurKernel > 1)
+                {
+                    Cv2.GaussianBlur(mask, blurred, new OpenCvSharp.Size(blurKernel, blurKernel), 0);
+                }
+                else
+                {
+                    mask.CopyTo(blurred);
+                }
+
+                // Re-threshold
+                using Mat binary = new Mat();
+                Cv2.Threshold(blurred, binary, 127, 255, ThresholdTypes.Binary);
+
+                // Active motion mask to eliminate ghost trails from bounding boxes
+                using Mat boxBinary = new Mat();
+                if (_chkIgnoreTrails.Checked && _prevFrameGray != null && !_prevFrameGray.Empty())
+                {
+                    using Mat frameDiff = new Mat();
+                    Cv2.Absdiff(frameGray, _prevFrameGray, frameDiff);
+
+                    using Mat diffMask = new Mat();
+                    Cv2.Threshold(frameDiff, diffMask, Math.Max(5, thresh / 3), 255, ThresholdTypes.Binary);
+
+                    using Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new OpenCvSharp.Size(15, 15));
+                    using Mat dilatedDiff = new Mat();
+                    Cv2.Dilate(diffMask, dilatedDiff, kernel);
+                    Cv2.MorphologyEx(dilatedDiff, dilatedDiff, MorphTypes.Close, kernel);
+
+                    Cv2.BitwiseAnd(binary, dilatedDiff, boxBinary);
+                }
+                else
+                {
+                    binary.CopyTo(boxBinary);
+                }
+
+                // Find contours
+                Cv2.FindContours(boxBinary, out OpenCvSharp.Point[][] contours, out HierarchyIndex[] _, RetrievalModes.External, ContourApproximationModes.ApproxSimple);
+
+                double minArea = Math.Max(50.0, (double)_nudMinArea.Value);
+                List<Rect> motionRects = new List<Rect>();
+
+                foreach (OpenCvSharp.Point[] cnt in contours)
+                {
+                    double area = Cv2.ContourArea(cnt);
+                    if (area >= minArea)
+                    {
+                        Rect rect = Cv2.BoundingRect(cnt);
+                        motionRects.Add(rect);
+                    }
+                }
+
+                if (motionRects.Count > 100)
+                {
+                    motionRects = motionRects.OrderByDescending(r => r.Width * r.Height).Take(100).ToList();
+                }
+
+                // Update tracked bounding boxes for smooth persistence and fading
+                _boxTracker.Configure((int)_nudBoxHold.Value);
+                var trackedBoxes = _boxTracker.Update(motionRects);
+
+                // Draw on frame
+                if (_currentFrameBgr == null || _currentFrameBgr.IsDisposed || _currentFrameBgr.Empty())
+                {
+                    return;
+                }
+
+                using Mat displayFrame = _currentFrameBgr.Clone();
+
+                // Red overlay
+                if (_chkOverlay.Checked)
+                {
+                    using Mat redMask = new Mat();
+                    if (_chkTrailsInOverlay.Checked)
+                    {
+                        binary.CopyTo(redMask);
+                    }
+                    else
+                    {
+                        boxBinary.CopyTo(redMask);
+                    }
+
+                    double alpha = (double)_nudAlpha.Value / 100.0;
+                    using Mat colorMask = new Mat(redMask.Size(), MatType.CV_8UC3, new Scalar(0, 0, 255));
+                    using Mat colorMaskFinal = new Mat();
+                    colorMask.CopyTo(colorMaskFinal, redMask);
+
+                    Cv2.AddWeighted(displayFrame, 1.0, colorMaskFinal, alpha, 0, displayFrame);
+                }
+
+                // Bounding boxes with smooth persistence and fading border
+                if (_chkBoxes.Checked)
+                {
+                    foreach (var (box, opacity) in trackedBoxes)
+                    {
+                        MotionBoxTracker.DrawFadingBoundingBox(displayFrame, box, opacity, 2);
+                    }
+                }
+
+                _latestAnnotatedBgr?.Dispose();
+                _latestAnnotatedBgr = displayFrame.Clone();
+
+                Bitmap bmp = BitmapConverter.ToBitmap(displayFrame);
+                Image? oldImage = _picture.Image;
+                _picture.Image = bmp;
+                oldImage?.Dispose();
+
+                _prevFrameGray?.Dispose();
+                _prevFrameGray = frameGray.Clone();
+
+                UpdateMetricsDisplay(trackedBoxes.Count);
             }
-
-            _latestAnnotatedBgr?.Dispose();
-            _latestAnnotatedBgr = displayFrame.Clone();
-
-            Bitmap bmp = BitmapConverter.ToBitmap(displayFrame);
-            Image? oldImage = _picture.Image;
-            _picture.Image = bmp;
-            oldImage?.Dispose();
-
-            _prevFrameGray?.Dispose();
-            _prevFrameGray = frameGray.Clone();
-
-            UpdateMetricsDisplay(trackedBoxes.Count);
+            catch (ObjectDisposedException)
+            {
+                // Frame or image was disposed during video switch or teardown
+            }
         }
-        catch (ObjectDisposedException)
-        {
-            // Frame or image was disposed during video switch or teardown
-        }
-    }
 
         private void UpdateMetricsDisplay(int motionCount)
         {
