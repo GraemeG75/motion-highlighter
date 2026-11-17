@@ -25,6 +25,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <EmbeddedResource Include="branding\kitten.png" />
+    <EmbeddedResource Include="Localization\Locales\*.json" />
   </ItemGroup>
 
 </Project>
