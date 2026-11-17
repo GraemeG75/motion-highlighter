@@ -1,0 +1,80 @@
+name: Build & Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag Name (e.g. v1.1.0)'
+        required: true
+        default: 'v1.1.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore motion.sln
+
+      - name: Run Test Specifications
+        run: dotnet test motion.sln --configuration Release --verbosity normal
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Publish Application
+        run: |
+          dotnet publish MotionHighlighter/MotionHighlighter.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained false `
+            -o installer/publish
+
+      - name: Determine Version
+        id: get_version
+        shell: pwsh
+        run: |
+          $tag = if ("${{ github.ref_name }}".StartsWith("v")) { "${{ github.ref_name }}" } else { "${{ github.event.inputs.tag_name }}" }
+          $cleanVersion = $tag.TrimStart('v')
+          if (-not $cleanVersion) { $cleanVersion = "1.0.0" }
+          Write-Output "version=$cleanVersion" >> $env:GITHUB_OUTPUT
+          Write-Output "tag=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Compile Inno Setup Installer
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          $version = "${{ steps.get_version.outputs.version }}"
+          & $iscc "/DMyAppVersion=$version" "/DMyAppSourceDir=publish" "/Ooutput" installer/MotionHighlighter.iss
+
+      - name: Create Portable Zip
+        shell: pwsh
+        run: |
+          $version = "${{ steps.get_version.outputs.version }}"
+          Compress-Archive -Path "installer/publish/*" -DestinationPath "installer/output/MotionHighlighter-$version-win-x64.zip" -Force
+
+      - name: Create GitHub Release & Upload Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.tag }}
+          name: Motion Highlighter ${{ steps.get_version.outputs.tag }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            installer/output/MotionHighlighter-Setup.exe
+            installer/output/MotionHighlighter-*-win-x64.zip
