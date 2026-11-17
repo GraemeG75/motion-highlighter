@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
+using MotionHighlighter.Localization;
+using MotionHighlighter.Updating;
 
 namespace MotionHighlighter
 {
@@ -12,13 +14,56 @@ namespace MotionHighlighter
         public const string WebsiteUrl = "https://generatedpixel.dev/";
         public const string MascotAltText = "Generated Pixel kitten mascot";
 
+        private readonly IUpdateService _updateService;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FormAbout"/> dialog.
         /// </summary>
-        public FormAbout()
+        public FormAbout() : this(new GitHubUpdateService())
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FormAbout"/> dialog with a specified update service.
+        /// </summary>
+        /// <param name="updateService">Update service implementation.</param>
+        public FormAbout(IUpdateService updateService)
+        {
+            _updateService = updateService ?? throw new ArgumentNullException(nameof(updateService));
+
             InitializeComponent();
+            ApplyLocalization();
             LoadMascotImage();
+
+            LocalizationManager.Instance.LanguageChanged += OnLanguageChanged;
+        }
+
+        /// <inheritdoc />
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            LocalizationManager.Instance.LanguageChanged -= OnLanguageChanged;
+            base.OnFormClosed(e);
+        }
+
+        private void OnLanguageChanged(object? sender, EventArgs e)
+        {
+            ApplyLocalization();
+        }
+
+        /// <summary>
+        /// Translates all UI controls using the active localization provider.
+        /// </summary>
+        public void ApplyLocalization()
+        {
+            Text = LocalizationManager.T("about.title");
+            lblTitle.Text = LocalizationManager.T("about.heading");
+            lblPrideBadge.Text = LocalizationManager.T("about.pride_badge");
+            lblVersion.Text = LocalizationManager.T("about.version", AppVersion.VersionString);
+            lblDescription.Text = LocalizationManager.T("about.description");
+            lblPrideStatement.Text = LocalizationManager.T("about.pride_statement");
+            btnClose.Text = LocalizationManager.T("about.btn_close");
+            btnCheckUpdates.Text = LocalizationManager.T("about.btn_check_updates");
+            toolTip.SetToolTip(picMascot, LocalizationManager.T("about.mascot_alt"));
         }
 
         /// <summary>
@@ -86,8 +131,62 @@ namespace MotionHighlighter
             for (int i = 0; i < prideColors.Length; i++)
             {
                 float x = i * stripeWidth;
-                using SolidBrush brush = new SolidBrush(prideColors[i]);
+                using SolidBrush brush = new(prideColors[i]);
                 e.Graphics.FillRectangle(brush, x, 0, stripeWidth + 1, h);
+            }
+        }
+
+        /// <summary>
+        /// Checks GitHub Releases for a newer application version.
+        /// </summary>
+        /// <param name="sender">Event sender.</param>
+        /// <param name="e">Event arguments.</param>
+        private async void OnCheckUpdatesClicked(object? sender, EventArgs e)
+        {
+            btnCheckUpdates.Enabled = false;
+            string originalText = btnCheckUpdates.Text;
+            btnCheckUpdates.Text = LocalizationManager.T("update.status_checking");
+
+            try
+            {
+                UpdateInfo? update = await _updateService.CheckForUpdatesAsync();
+                if (update != null && update.IsNewer)
+                {
+                    using FormUpdate updateDialog = new(update, _updateService);
+                    updateDialog.ShowDialog(this);
+                }
+                else if (update != null)
+                {
+                    MessageBox.Show(
+                        this,
+                        LocalizationManager.T("update.status_up_to_date", AppVersion.VersionString),
+                        LocalizationManager.T("update.title"),
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        this,
+                        LocalizationManager.T("update.status_failed", "GitHub Releases API was unreachable."),
+                        LocalizationManager.T("common.warning"),
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    this,
+                    LocalizationManager.T("update.status_failed", ex.Message),
+                    LocalizationManager.T("common.error"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            finally
+            {
+                btnCheckUpdates.Text = originalText;
+                btnCheckUpdates.Enabled = true;
             }
         }
 

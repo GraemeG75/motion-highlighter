@@ -26,6 +26,7 @@ namespace MotionHighlighter
             linkWebsite = new LinkLabel();
             lblPrideStatement = new Label();
             lblPrideBadge = new Label();
+            btnCheckUpdates = new Button();
             btnClose = new Button();
             panelContent = new Panel();
             toolTip = new ToolTip(components);
@@ -55,6 +56,7 @@ namespace MotionHighlighter
             panelContent.Controls.Add(lblDescription);
             panelContent.Controls.Add(linkWebsite);
             panelContent.Controls.Add(lblPrideStatement);
+            panelContent.Controls.Add(btnCheckUpdates);
             panelContent.Controls.Add(btnClose);
             panelContent.Dock = DockStyle.Fill;
             panelContent.Location = new Point(0, 10);
@@ -156,6 +158,19 @@ namespace MotionHighlighter
             lblPrideStatement.Text = "💖 Celebrating diversity, equality, and LGBTQ+ pride in open source technology. All creators, developers, and users are welcome here.";
 
             // 
+            // btnCheckUpdates
+            // 
+            btnCheckUpdates.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnCheckUpdates.Font = new Font("Segoe UI", 9F);
+            btnCheckUpdates.Location = new Point(24, 312);
+            btnCheckUpdates.Name = "btnCheckUpdates";
+            btnCheckUpdates.Size = new Size(160, 30);
+            btnCheckUpdates.TabIndex = 8;
+            btnCheckUpdates.Text = "Check for Updates";
+            btnCheckUpdates.UseVisualStyleBackColor = true;
+            btnCheckUpdates.Click += OnCheckUpdatesClicked;
+
+            // 
             // btnClose
             // 
             btnClose.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -202,6 +217,7 @@ namespace MotionHighlighter
         private LinkLabel linkWebsite = null!;
         private Label lblPrideStatement = null!;
         private Label lblPrideBadge = null!;
+        private Button btnCheckUpdates = null!;
         private Button btnClose = null!;
         private ToolTip toolTip = null!;
     }
