@@ -48,6 +48,25 @@ Motion Highlighter is a Windows Forms application using **OpenCvSharp** to detec
   - Adjusting Threshold, Min Area, Blur Kernel, or Overlay Opacity immediately re-renders the current frame when paused without reloading.
 - **Exporting**:
   - Background asynchronous export to MP4 with progress reporting and cancellation support.
+- **Multi-Language Support (i18n)**:
+  - 100% complete translation coverage across 4 languages: English (`en`), German (`de`), French (`fr`), and Spanish (`es`).
+  - Seamless runtime language switching via the language dropdown on the main toolbar.
+  - Extensible: drop custom `{code}.json` files into a `locales/` folder next to the executable to add new languages without recompilation.
+- **Versioning & GitHub Releases Updates**:
+  - Clean semantic versioning (e.g. `Version 1.0.0`).
+  - Built-in update checker queries the GitHub Releases API (`GraemeG75/motion-highlighter`).
+  - Update dialog displays new release notes and downloads the installer with real-time progress.
+  - Automatically launches the installer to upgrade the application seamlessly.
+- **Windows Installer**:
+  - Inno Setup script (`installer/MotionHighlighter.iss`) with full English, German, French, and Spanish installer localization.
+  - Packaging build script (`installer/build-installer.ps1`) for building release installers and portable archives.
+  - Automated GitHub Actions workflow (`.github/workflows/release.yml`) that publishes the installer executable on release tags.
+
+## Branding & Community
+
+- **Website**: [https://generatedpixel.dev/](https://generatedpixel.dev/)
+- **Mascot**: Generated Pixel kitten mascot (`kitten.png`)
+- **LGBTQ+ Pride**: Proudly celebrating diversity, equality, and LGBTQ+ pride in open source software.
 
 ## Detection Settings
 
