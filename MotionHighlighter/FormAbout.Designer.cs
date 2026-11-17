@@ -113,7 +113,7 @@ namespace MotionHighlighter
             lblVersion.Name = "lblVersion";
             lblVersion.Size = new Size(180, 15);
             lblVersion.TabIndex = 3;
-            lblVersion.Text = "Version 1.0.0 • .NET 10 / OpenCV";
+            lblVersion.Text = AppVersion.DisplayString;
 
             // 
             // linkWebsite
